@@ -5,10 +5,12 @@ import { ProductData } from 'types';
 import html from './productDetail.tpl.html';
 import { cartService } from '../../services/cart.service';
 import { userService } from '../../services/user.service';
+import { favoriteService } from '../../services/favorite.service';
+import { EventType, analytics } from '../../services/analytic.service';
 
 class ProductDetail extends Component {
   more: ProductList;
-  product?: ProductData;
+  product!: ProductData;
 
   constructor(props: any) {
     super(props);
@@ -39,15 +41,27 @@ class ProductDetail extends Component {
     this.view.description.innerText = description;
     this.view.price.innerText = formatPrice(salePriceU);
     this.view.btnBuy.onclick = this._addToCart.bind(this);
+    this.view.btnFav.onclick = this._handleOnClickFavorite.bind(this);
 
     const isInCart = await cartService.isInCart(this.product);
+    const isInFavorite = await favoriteService.isInFavorite(this.product);
 
     if (isInCart) this._setInCart();
+    if (isInFavorite) this._setInFavorite();
 
     fetch(`/api/getProductSecretKey?id=${id}`)
       .then((res) => res.json())
       .then((secretKey) => {
         this.view.secretKey.setAttribute('content', secretKey);
+
+        analytics.sendEvent({
+          type: EventType.VIEW_CARD,
+          payload: {
+            secretKey,
+            productData: this.product
+          },
+          timestamp: Date.now()
+        });
       });
 
     fetch('/api/getPopularProducts', {
@@ -66,11 +80,52 @@ class ProductDetail extends Component {
 
     cartService.addProduct(this.product);
     this._setInCart();
+
+    analytics.sendEvent({
+      type: EventType.ADD_TO_CARD,
+      payload: this.product,
+      timestamp: Date.now()
+    });
   }
 
   private _setInCart() {
     this.view.btnBuy.innerText = '✓ В корзине';
     this.view.btnBuy.disabled = true;
+  }
+
+  private async _handleOnClickFavorite() {
+    if (!this.product) return;
+
+    const isInFavorite = await favoriteService.isInFavorite(this.product);
+
+    if (isInFavorite) {
+      this._removeToFavorites();
+      return;
+    }
+
+    this._addToFavorite();
+  }
+
+  _setInFavorite() {
+    this.view.btnFav.classList.add('active');
+  }
+
+  _removeInFavorite() {
+    this.view.btnFav.classList.remove('active');
+  }
+
+  private _addToFavorite() {
+    if (!this.product) return;
+
+    favoriteService.addProduct(this.product);
+    this._setInFavorite();
+  }
+
+  private _removeToFavorites() {
+    if (!this.product) return;
+
+    favoriteService.removeProduct(this.product);
+    this._removeInFavorite();
   }
 }
 
