@@ -5,10 +5,11 @@ import { ProductData } from 'types';
 import html from './productDetail.tpl.html';
 import { cartService } from '../../services/cart.service';
 import { favoriteService } from '../../services/favorite.service';
+import { EventType, analytics } from '../../services/analytic.service';
 
 class ProductDetail extends Component {
   more: ProductList;
-  product?: ProductData;
+  product!: ProductData;
 
   constructor(props: any) {
     super(props);
@@ -45,6 +46,15 @@ class ProductDetail extends Component {
       .then((res) => res.json())
       .then((secretKey) => {
         this.view.secretKey.setAttribute('content', secretKey);
+
+        analytics.sendEvent({
+          type: EventType.VIEW_CARD,
+          payload: {
+            secretKey,
+            productData: this.product
+          },
+          timestamp: Date.now()
+        });
       });
 
     fetch('/api/getPopularProducts')
@@ -59,6 +69,12 @@ class ProductDetail extends Component {
 
     cartService.addProduct(this.product);
     this._setInCart();
+
+    analytics.sendEvent({
+      type: EventType.ADD_TO_CARD,
+      payload: this.product,
+      timestamp: Date.now()
+    });
   }
 
   private _setInCart() {
@@ -66,25 +82,25 @@ class ProductDetail extends Component {
     this.view.btnBuy.disabled = true;
   }
 
-  private async _handleOnClickFavorite () {
+  private async _handleOnClickFavorite() {
     if (!this.product) return;
 
     const isInFavorite = await favoriteService.isInFavorite(this.product);
 
     if (isInFavorite) {
-      this._removeToFavorites()
+      this._removeToFavorites();
       return;
     }
 
-    this._addToFavorite()
+    this._addToFavorite();
   }
 
   _setInFavorite() {
-    this.view.btnFav.classList.add("active");
+    this.view.btnFav.classList.add('active');
   }
 
   _removeInFavorite() {
-    this.view.btnFav.classList.remove("active");
+    this.view.btnFav.classList.remove('active');
   }
 
   private _addToFavorite() {
@@ -93,7 +109,6 @@ class ProductDetail extends Component {
     favoriteService.addProduct(this.product);
     this._setInFavorite();
   }
-
 
   private _removeToFavorites() {
     if (!this.product) return;
