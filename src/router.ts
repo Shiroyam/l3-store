@@ -3,8 +3,9 @@ import { notFoundComp } from './modules/notFound/notFound';
 import { homepageComp } from './modules/homepage/homepage';
 import { productDetailComp } from './modules/productDetail/productDetail';
 import { checkoutComp } from './modules/checkout/checkout';
-import { favoriteComp } from "./modules/favorite/favorite";
+import { favoriteComp } from './modules/favorite/favorite';
 import { Component } from './modules/component';
+import { EventType, analytics } from './services/analytic.service';
 
 const ROUTES: Record<string, Component> = {
   '/': homepageComp,
@@ -29,8 +30,14 @@ export default class Router {
 
     const component = ROUTES[window.location.pathname] || notFoundComp;
 
-    if(!this.$appRoot) return;
+    if (!this.$appRoot) return;
     component.attach(this.$appRoot);
     component.render();
+
+    analytics.sendEvent({
+      type: EventType.ROUTE,
+      payload: { url: window.location.pathname },
+      timestamp: Date.now()
+    });
   }
 }
