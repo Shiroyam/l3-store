@@ -4,15 +4,18 @@ import { homepageComp } from './modules/homepage/homepage';
 import { productDetailComp } from './modules/productDetail/productDetail';
 import { checkoutComp } from './modules/checkout/checkout';
 import { favoriteComp } from './modules/favorite/favorite';
+import { searchComp } from './modules/search/search';
 import { Component } from './modules/component';
 import { EventType, analytics } from './services/analytic.service';
+
 
 const ROUTES: Record<string, Component> = {
   '/': homepageComp,
   '/catalog': catalogComp,
   '/product': productDetailComp,
   '/checkout': checkoutComp,
-  '/favorite': favoriteComp
+  '/favorite': favoriteComp,
+  '/search': searchComp
 };
 
 export default class Router {
