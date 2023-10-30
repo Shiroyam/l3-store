@@ -1,0 +1,23 @@
+.search_helper {
+  font-size: 22px;
+  font-weight: 550;
+  color: #000;
+
+  .search_helper_children {
+    border-radius: 8px;
+    padding: 8px 6px;
+    background-color: #F6F6FA;
+    text-decoration: none;
+  }
+
+  .tip {
+    background-image: linear-gradient(93deg, #DA15B8 4.93%, #8D06CC 100%);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    font-size: 22px;
+    font-weight: 550;
+  }
+}
